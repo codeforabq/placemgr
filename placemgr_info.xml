@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PLaceMgr>
+  <website>
+	<title lang="en">ABQ Votes via PlaceMgr</title>
+	<database>placemgr.json</database>
+  </website>
+</PLaceMgr>

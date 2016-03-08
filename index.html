@@ -1,0 +1,556 @@
+<!-- index.html is the home page for the PlaceMgr app. It uses functions from placemgr_xxx.js. See README.md -->
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+		<link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+		<!-- Fonts -->
+		<link href="http://fonts.googleapis.com/css?family=Roboto:400,300" rel="stylesheet" type="text/css" >
+		<link href='https://fonts.googleapis.com/css?family=Cabin' rel='stylesheet' type='text/css'>
+		<link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' type='text/css'>
+		<link rel="stylesheet" type="text/css" href="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.css" />
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.3/leaflet.js"></script>
+		<script src='http://api.tiles.mapbox.com/mapbox.js/plugins/turf/v2.0.0/turf.min.js'></script>
+		<link link rel="stylesheet" type="text/css" href="placemgr.css">
+
+		<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+		<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+		<!--[if lt IE 9]>
+		<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+		<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+		<!-- Scripts -->
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+		<script src="http://code.jquery.com/ui/1.11.4/jquery-ui.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.1/js/bootstrap.min.js"></script>
+		<script src="http://cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
+
+		<!-- JKH todo - Pull appName and Website title from external file "placemgr_info.xml" -->
+		<!-- Google Analytics -->
+		<!-- NOTE: //www.google-analytics.com/analytics.js not found via file://. Changed to http:// -->
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+				(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+				m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+			})(window,document,'script','http://www.google-analytics.com/analytics.js','ga');
+
+			ga('create', 'UA-66502403-1', 'auto');
+			ga('send', 'pageview');
+			ga('set', { 'appName': 'ABQvotes' });
+		</script>
+		<!-- script to read XML (demo; xmlhttprequest fails)
+		<p id="demo"></p>
+		<script>
+			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (xhttp.readyState == 4 && xhttp.status == 200) {
+					myFunction(xhttp);
+				}
+			};
+			xhttp.open("GET", "placemgr_info.xml", true);
+			xhttp.send();
+
+			function myFunction(xml) {
+				var xmlDoc = xml.responseXML;
+				document.getElementById("demo").innerHTML =
+			xmlDoc.getElementsByTagName("title")[0].childNodes[0].nodeValue;
+			}
+		</script> -->
+		<title lang="en">ABQ Votes JKH </title>
+
+	</head>
+	<body>
+		<div class="container-fluid master-container">
+
+			<header class="navbar navbar-default" style = "margin-bottom: 0px; margin-top: -9px; border:none">
+				<div class="navbar-header" style="width: 100%; background-color: #400000; padding-bottom: 10px;" id = "header-button">
+
+					<div class="col-lg-2 col-md-3 col-sm-3 hidden-xs" id="brigadeLogoLeft" style = "font-family: 'Cabin', sans-serif; z-index: 10000;margin-top: 18px;">
+						<a href="http://www.codeforabq.org" style ="color: wheat">A <img class = "logoHeader" src="images/balloon_var4.png"> project.</a>
+					</div>
+					<div class = "col-lg-8 col-md-6 col-sm-6 hidden-xs" style = "margin-right: -15px; background-color: #400000; color: wheat; text-align: center" id = "appendViewHeading">
+						<h3 class="hidden-xs" style="text-align: center; width: 100%; font-weight: bold; font-size: 41px">ABQ Title JKH 2015!</h3>
+					</div>
+					<div class="col-lg-2 col-md-3 col-sm-3 hidden-xs" id="brigadeLogo" style="z-index: 10000;margin-top: 18px; padding-right: 0px; text-align: right">
+						<a  data-toggle="modal" data-target="#confirmModal" id="right-reportButton" onclick="checkReportLocation()" style = "font-family: 'Cabin', sans-serif; color: wheat; font-size:20px">
+							<span class = 'glyphicon glyphicon-time' style = 'vertical-align: -2px;'></span><span style = 'padding-left: 1px;'>?</span>
+						</a>
+					</div>
+					<div class = "hidden-lg hidden-md hidden-sm col-xs-4" id = "mapToggler" style = "z-index: 10000;">
+						<button type="button" class="btn btn-lg filterButton" style = "    font-size: 36px; padding-top: 9px; padding-bottom: 0px; padding-left: 15px;" onclick = "showMobileMap()">
+							<span class = "glyphicon glyphicon-map-marker" ></span>
+						</button>
+					</div>
+					<div class = "hidden-lg hidden-md hidden-sm col-xs-4" id = "listToggler" style = "z-index: 10000; display:none;">
+						<button type="button" class="btn btn-lg filterButton" style = "padding: 4px 4px 1px;" onclick = "hideMobileMap()">
+							<span class = "glyphicon glyphicon-th-list" style = "margin-top: 5px;" ></span>
+						</button>
+					</div>
+					<div class = "hidden-lg hidden-md hidden-sm col-xs-4" id = "reportHeaderButton" style = "z-index: 10000;">
+						<button type="button" class="btn btn-lg filterButton" data-toggle="modal" data-target="#confirmModal" style = "font-family: 'Cabin', sans-serif; padding-bottom: 0px; padding-right: 0; padding-left: 0; background-color: #f0ad4e; color: black" onclick = "checkReportLocation()">
+							<span class = 'glyphicon glyphicon-time' style = 'font-size: 39px; vertical-align: -4px;'></span><span style = 'font-size: 39px; padding-left: 1px;'>?</span>
+						</button>
+					</div>
+
+					<div id = "headerLogo" class = "hidden-lg hidden-md hidden-sm col-xs-4" style ="z-index:10000; display:none">
+						<div class = "buttonDetails"   id="brigadeLogoMobile" style="    z-index: 10000;font-size: 15px; padding: 0; margin-top: 1px; margin-bottom: -1px;">
+							<a type="button" class="btn btn-lg filterButton" href="http://www.codeforabq.org" style = "color: lightgrey; margin-left: -10px; padding: 6px 5px;">
+								<img class = "logoMobile" src="images/balloon_var4.png">
+							</a>
+						</div>
+					</div>
+
+					<!-- Dropdown filter menu -->
+					<!-- JKH - todo - Pull filter list from placemgr_info.xml -->
+					<div id = headerFilterButton class = "btn-group dropdown hidden-lg hidden-md hidden-sm col-xs-4" style ="margin-left: 0px; ">
+						<button type="button" class="btn btn-lg filterButton dropdown-toggle" style = "font-size: 37px; padding-top: 7px; padding-bottom: 0px; " data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-canvas="body" >
+							<span class = "glyphicon glyphicon-filter" ></span>
+						</button>
+						<ul id = "filterDropdownArea" class="dropdown-menu dropdown-filter" style = "list-style-type: none; text-align: center; padding: 5px 10px">
+							<span style =" font-size: 20px;"><strong>FILTERS</strong></span>
+							<br/>
+							<hr/>
+							<div style="text-align: right;">
+								<li class = "filter-items" id="allMobile" style="display:block">
+									<div id = "isAllMobile" onclick = "setFilterRadios('all'); rebuildList();" class = "btn btn-default tabLink activeSort mobileCheckboxes" role='group' >
+										<span>Show All Locations</span>
+										<input id = "allBoxMobile" type = "radio" name = "mobileFilters"  class = " checkboxes">
+									</div>
+								</li>
+
+								<li class = "filter-items" id="earlyVotingMobile" style="display:block">
+									<div id = "isEarlyMobile" onclick = "setFilterRadios('early');" class = "btn btn-default tabLink activeSort mobileCheckboxes" role='group' >
+										<span>Show Early Voting</span>
+										<input id = "earlyBoxMobile" type = "radio" name = "mobileFilters" checked = "checked" class = "checkboxes">
+									</div>
+								</li>
+
+								<li class = "filter-items" id="absenteeMobile" style="display:block">
+									<div id = "isAbsenteeMobile" onclick = "setFilterRadios('absentee');" class = "btn btn-default tabLink activeSort mobileCheckboxes" role='group' >
+										<span>Absentee Locations</span>
+										<input id = "absenteeBoxMobile" type = "radio" name = "mobileFilters" class = "checkboxes">
+									</div>
+								</li>
+
+								<li class = "filter-items" id="logoMobile" style="display:block">
+									<br/>
+									<a href="http://www.codeforabq.org" style ="color: wheat">More about <img class = "logoHeader" src="images/balloon_var4.png"> projects.</a>
+								</li>
+
+								<!--hidden as unnecessary-->
+								<li class = "filter-items" id="mobileMaxWait" style="display:none">
+									<label for="isMobileMaxWait" style="text-align: right">Max Wait Time:</label>
+									<input id="isMobileMaxWait" onclick="unselectMaxWait()" name="isMaxWait" type="checkbox" value="isMaxWait">
+								</li>
+								<li class = "filter-items" id="mobileMaxWait2" style="display:none">
+									<em>minutes:</em><input id="theMobileMaxWait" class="minFeeFilter" onchange="changeMaxWait(this.value)" name="mobile_max_wait" type="number" value="60">
+								</li>
+								<!--<br/>-->
+
+								<li class = "filter-items" style="display:none">
+									<label for="isMobileMaxDistance" style="text-align: right">Max Distance:</label>
+									<input id="isMobileMaxDistance" onclick="unselectMaxDistance()"  name="isMobileMaxDistance" type="checkbox" value="isMobileMaxDistance">
+								</li>
+								<li class = "filter-items" style="display:none">
+									<em>miles:</em><input id="theMobileMaxDistance" class="minFeeFilter" onchange="changeMaxDistance(this.value)" name="mobile_max_distance" type="number" value="3">
+								</li>
+							</div>
+						</ul>
+					</div>
+				</div>
+			</header>
+
+			<!--Hidden TEMPLATES TO REBUILD SECTIONS OF CODE IN LOOPS-->
+			<!--buildList Template-->
+			<div id="buildList" style="display: none">
+				<div class="list-panel panel-default" style="padding-bottom: 0px" id="insert-list-panel-id"
+					  onmouseover="insertHighlightFnHere()"
+					  onmouseout="insertUnHighlightFnHere()">
+					<div class="panel-heading" style="padding-right: 0px">
+						<h4 class="panel-title list-title"  >
+							<a class = "buttonDetails" id = "list-href" data-toggle="collapse" data-parent="accordion" href="insertHrefHere">
+								<div class= "col-xs-2 distance" style = "">
+									<span id="list-distance"> </span> mi.
+								</div>
+								<div class= "col-xs-8 name">
+									<span class="caret"></span>
+									<div style = "display: inline;">
+										<span id="list-name"> </span>
+									</div>
+								</div>
+								<div class="col-xs-1 wait" >
+									<span id="list-lineCount"> </span>
+								</div>
+							</a>
+						</h4>
+					</div>
+					<section class="panel-collapse collapse" id='cssId' style ="padding-left: 12px;">
+						<article class="panel-body">
+							<h4 id = "list-lineLength"></h4>
+							<h4 id = "list-lastUpdate"></h4>
+							<h4> <strong>Address: </strong>
+								<br/>
+								<a id = "list-addressLink" target="_blank" href="https://www.google.com/maps/place/760+West+Genesee+Street+Syracuse+NY+13204">
+									<span id="list-address"> </span>
+								</a>
+							</h4>
+							<h4> <strong>Hours: </strong>
+								<span id="list-voting-election"></span>
+								<br/>
+								<span id="list-voting-early"></span>
+								<span id="list-voting-absentee"> </span>
+							</h4>
+						</article>
+					</section>
+				</div>
+			</div>
+
+			<!--locationDetails Template for map popups-->
+			<div id="locationBodyDetails" style="display:none">
+				<div class='popup-edits' onmouseover>
+					<h3> <strong><span id="name"> </span></strong></h3>
+					<h4 id = "lineLength"></h4>
+					<h4 id = "lastUpdate"></h4>
+					<h4> <strong>Address: </strong>
+						<br/>
+						<a id = "addressLink" target="_blank" href="https://www.google.com/maps/place/760+West+Genesee+Street+Syracuse+NY+13204">
+							<span id="address"> </span></a>
+					</h4>
+					<h4> <strong>Distance: </strong>
+						<br/>
+						<span id="distance"> </span> mi.
+					</h4>
+					<!-- JKH todo - Pull details from placemgr_info.xml -->
+					<h4> <strong>Hours: </strong>
+						<span id="voting-election"> </span>
+						<br/>
+						<span id="voting-early"> </span>
+						<span id="voting-absentee"> </span>
+					</h4>
+				</div>
+			</div>
+
+			<!--build list in map view-->
+			<div id = "buildListInMap" style="display:none">
+				<div class="listHalf"  id = "listRow" >
+					<div id ="scrollableList">
+
+						<!--<div class="col-lg-4 col-md-5 col-sm-6 col-xs-12  listHalf"  id = "listRow" >-->
+						<div class=" tabs" id = "zoomTabLink" >
+
+							<!--filter button hidden until needed if at all-->
+							<div id = "filterButtonOverList" class='btn-group btn-group-justified ' role='group' style = "display:none">
+								<div class='btn-group tabLink activeSort' role='group' >
+									<h2 class="panel-title filter-panel-title " >
+										<a class = "buttonDetails hidden-xs"  data-toggle="collapse" data-parent="accordion" href="#collapseF">
+											<span class = "glyphicon glyphicon-filter"></span>
+										</a>
+									</h2>
+								</div>
+							</div>
+
+							<div id="subtractFromList1">
+								<div class='btn-group btn-group-justified hidden-xs filterButtonsGroup' role='group' id = "filterButtons" >
+									<div id = "isAll" onclick = "setFilterRadios('all');" class = "btn btn-default tabLink activeSort checkboxButtons" role='group' >
+										<input id = "allBox" type = "radio" name = "nonMobileFilters" checked = "checked" class = " checkboxes">
+										<span>All</span>
+									</div>
+									<div id = "isEarly" onclick = "setFilterRadios('early');" class = "btn btn-default tabLink activeSort checkboxButtons" role='group' >
+										<input id = "earlyBox" type = "radio" name = "nonMobileFilters" checked = "checked" class = "checkboxes">
+										<span>Early</span>
+									</div>
+									<div id = "isAbsentee" onclick = "setFilterRadios('absentee');" class = "btn btn-default tabLink activeSort checkboxButtons" role='group' style = "border-right: 0px !important" >
+										<input id = "absenteeBox" type = "radio" name = "nonMobileFilters" class = "checkboxes">
+										<span>Absentee</span>
+									</div>
+								</div>
+							</div>
+
+							<div class="scrollable-list scrollable-height" id = "scrollableList2" >
+								<div class="tab-content" id = "scrollableTabContent" >
+									<div role="tabpanel" class="tab-pane fade in active center" id="zoomPane">
+										<div class='btn-group btn-group-justified ' role='group'>
+											<div id = "byNearest" onclick = "sortArray('distance'); rebuildList();" class = "btn btn-default tabLink activeSort" role='group' >
+												Nearest <div id ="nearestCaret" class="caret"></div>
+											</div>
+											<div id = "byName" onclick = "sortArray('name'); rebuildList();" class = "btn btn-default tabLink " role='group' >
+												Name <div id = "nameCaret" class="right-caret"></div>
+											</div>
+											<div id = "byLowest" onclick = "sortArray('time'); rebuildList();" class = "btn btn-default tabLink" role='group' >
+												Line Length <div id = "lowestCaret" class="right-caret"></div>
+											</div>
+										</div>
+										<div id="insertMapListHere"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Message and Error handling -->
+			<!-- Error - Looking for Location -->
+			<div id = "stillWaitingModalReport" style = "display: none;">
+				<div style = "text-align: center">
+					<h1>One second.  Still looking for your location...</h1>
+					<br/>
+				</div>
+			</div>
+			<!-- Error - Looking for Location -->
+			<div id = "stillWaitingModalSplash" style = "display: none; ">
+				<div style = "text-align: center; color: white; padding: 5px; margin-top: -5px;">
+					<h1>One second.  Still looking for your location...</h1>
+					<br/>
+				</div>
+			</div>
+			<!-- Message - Confirm Location -->
+			<div id = "confirmLocationModal" style = "display: none;">
+				<div style = "text-align: center">
+						<h4>Are you voting at <br/><span id="reportItems"></span>?</h4>
+					<br/>
+					<button class = "btn btn-lg modalButtons" onclick = "confirmReport()"> Yes! </button>
+					<button class = "btn btn-lg modalButtons" onclick = "showReportError()"> No... </button>
+					<br/>
+				</div>
+			</div>
+
+			<!-- Error - Polls are closed -->
+			<div id = "nonElectionTimeError" style = "display: none;">
+				<div style = "text-align: center">
+					<h4>
+						Oops!  This is not currently election season. Please try again when voting is open.
+					</h4>
+					<br/>
+					<button class = "btn btn-md modalButtons" onclick="closeModal()"> Close </button>
+					<br/>
+				</div>
+			</div>
+
+			<!-- Error - Can't find location -->
+			<div id = "reportModalError" style = "display: none;">
+				<div style = "text-align: center">
+					<h4>
+						Oops!  In order for you to update our system we need to verify you are at the voting location.
+						Try refreshing the page, and
+						if that doesn't work, your device's location services may not be working as expected.
+						Try turning them on within your browser's settings, then refresh the page again.
+					</h4>
+					<br/>
+					<button class = "btn btn-md modalButtons" onclick="closeModal()"> Close </button>
+					<br/>
+				</div>
+			</div>
+
+			<!-- Message - Thanks for helping! -->
+			<div id = "thankModal" style = "display: none;">
+				<div style = "text-align: right">
+					<h4 >
+						You just helped others <br/>vote more easily.<br/>All while standing in line!
+					</h4>
+
+					<br/>
+					<!-- Now, for some light reading; websites with more information -->
+					<h5>Now, for some light reading:</h5>
+					<h4><a href="http://www.cabq.gov/voting-elections" target = "_blank" style = "color: #400000; text-decoration: underline">General CABQ Elections Info</a></h4>
+					<br/>
+					<h4><a href="http://www.codeforabq.org" target = "_blank" style = "color: #400000; text-decoration: underline">Learn more about <img class = "logoHeader" src="images/balloon_var4.png" style = "background-color: #400000"> projects.</a></h4>
+					<br/>
+					<h4><a href="http://www.cabq.gov/abq-data" target = "_blank" style = "color: #400000; text-decoration: underline">ABQVotes relies on CABQ Open Data. Learn More. </a></h4>
+					<br/>
+					<button class = "btn btn-md modalButtons" onclick="closeModal()" style = "text-align: center"> Close </button>
+					<br/>
+				</div>
+			</div>
+
+			<!-- Error - Too far away -->
+			<div id = "notNearEnoughModal" style = "display: none;">
+				<div style = "text-align: center">
+					<h4>
+						In order for you to update our system we need to verify you are at the voting location.
+						We were able to locate you, but you don't seem to be close enough.
+						Please refresh the page once you are at the location.
+					</h4>
+					<br/>
+					<button class = "btn btn-md modalButtons" onclick="closeModal()"> Close </button>
+					<br/>
+				</div>
+			</div>
+
+			<!-- Message - Confirm your reported information -->
+			<div id = "confirmReportModal" style = "display: none;">
+				<div style = "text-align: center">
+					<h3>At <span id="confirmedLocation"></span>:</h3>
+						<h2 style = "text-align: left">How many people in line with you?</h2>
+						<input id ="lineCountInput" class = "reportInputs" type = "number" >
+						<br/>
+						<br/>
+						<input id="modalReportButton" name="id" type="hidden" value="insertIdHere">
+						<input class="form-control btn btn-warning btn-md dropdown-buttons" onclick = "submitReport()" style = "color: black; font-weight: bolder" type="button" value="Report">
+					<br/>
+				</div>
+			</div>
+
+			<div class="modal fade bs-example-modal-lg"  style = "z-index: 100000" id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-lg" style = "z-index: 1000000">
+					<div class="modal-content" >
+						<div class="modal-header" style = "background-color: #f0ad4e; color: black; border-bottom:1px solid black">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+							<h1 class="modal-title reportModalTitle" id="myModalLabel" style = "text-align: center">How Long is Your Line?</h1>
+						</div>
+						<div class="modal-body" id = "modalBody" style = "background-color: #FEF7ED">
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+			<div class="modal fade bs-example-modal-lg"  style = "z-index: 100000" id="splashModal" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-lg" style = "z-index: 1000000; width: 95%">
+					<div class="modal-content" >
+						<div class="modal-header" style = "background-color: #400000; padding-bottom: 0; padding-top: 5px; border: 0">
+							<!-- JKH todo: Title bar from placemgr_info.xml (length is limited as indicated in xml file) -->
+							<h2 class="modal-title splashModalTitle" id="splashModalLabel1" style = "text-align: center; margin: -8px 0">ABQ Votes JKH!</h2>
+						</div>
+						<div class="modal-body" id = "splashModalBody" style = "background-color: #400000; padding-top:0">
+							<div class = "row">
+								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="z-index: 10000;margin-top: 18px; text-align: center">
+									<button type="button" class="btn btn-lg btn-warning splashButtons" id="splash-findButton" onclick="closeSplash()">
+										<div class = "row" style = "text-align: center">
+											<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="z-index: 10000; text-align: center">
+												<span class = "glyphicon glyphicon-eye-open" style = "vertical-align: -3px; font-size:50px"></span>
+											</div>
+											<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="z-index: 10000; text-align: center">
+												<span>Find a poll near you.</span>
+											</div>
+										</div>
+									</button>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="z-index: 10000;margin-top: 18px; text-align: center; padding-bottom: 20px;">
+									<button type="button" class="btn btn-lg btn-warning splashButtons"  data-toggle="modal" data-target="#confirmModal" id="splash-reportButton" onclick="checkReportLocation()">
+										<div class = "row" style = "text-align: center">
+											<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="z-index: 10000; text-align: center; padding-top: 5px">
+												<span class = "glyphicon glyphicon-time" style = "vertical-align: -3px; font-size:50px"></span>
+											</div>
+											<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="z-index: 10000; text-align: center">
+												<span>How long is your line?</span>
+											</div>
+										</div>
+									</button>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="font-size: 18px; z-index: 10000; padding-bottom: 38px; color: wheat; text-align: center; border-bottom: 1px solid wheat; display:none">
+										<span><em>* Note: wait times are only an estimate of relative delays at each location - just like choosing your cashier at the supermarket.</em></span>
+								</div>
+								<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="z-index: 10000;margin-top: 18px; text-align: center">
+									<a href="https://codeforabq.typeform.com/to/BWtrM0" target = "_blank" style ="color: wheat">Have feedback to give Code4ABQ?</a>
+								</div>
+								<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="z-index: 10000;margin-top: 18px; text-align: center; ">
+									<a href="http://www.codeforabq.org" target = "_blank" style ="color: wheat">A <img class = "logoHeader" src="images/balloon_var4.png"> project.</a>
+								</div>
+								<div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="z-index: 10000;margin-top: 18px; text-align: center">
+									<a onclick = "showLightReading()" href = "#lightReading" style ="color: wheat">Some light reading.</a>
+								</div>
+
+								<div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style = "display:none; text-align: center" id = "lightReading"; >
+									<br/>
+									<br/>
+									<h4><a href="http://www.cabq.gov/voting-elections" target = "_blank" style = "color: wheat; text-decoration: underline">You don't have to vote in your precinct! <br/> See your district's ballot and <br/>other general CABQ elections info.</a></h4>
+									<br/>
+									<h4><a href="http://www.codeforabq.org" target = "_blank" style = "color: wheat; text-decoration: underline">Learn more about <img class = "logoHeader" src="images/balloon_var4.png" style = "background-color: #400000"> projects.</a></h4>
+									<br/>
+									<h4><a href="http://www.cabq.gov/abq-data" target = "_blank" style = "color: wheat; text-decoration: underline">ABQVotes relies on CABQ Open Data. Learn More. </a></h4>
+									<br/>
+									<h4><a href="http://www.bernco.gov/clerk/voter-registration.aspx" target = "_blank" style = "color: wheat; text-decoration: underline">Register to Vote with Bernalillo County<br/><em>(last day for 2015 elections was 9/8)</em> </a></h4>
+									<br/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="container-fluid center" style = "display:none">
+				<section class="panel-collapse collapse filters filterBar" id='collapseF' >
+					<div class="row">
+						<div class="col-lg-4 col-md-4 col-sm-4 hidden-xs " >
+							<div class="row">
+								<div class="col-lg-12 col-md-12 col-sm-12 hidden-xs" >
+									<input id="mapViewId" onclick="decideView(this.value)" name="mapView" type="checkbox" value="map-on">
+									<label for="mapViewId" style="text-align: right">Show Map Only</label>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 hidden-xs" id="earlyVoting" style="display:block" >
+									<input id="isEarlyVoting" onclick="selectEarlyVoting()" name="isEarlyVoting" type="checkbox" value="isEarlyVoting">
+									<label for="isEarlyVoting" style="text-align: right">Show Early Voting Locations open on</label>
+									<input type="text" class="dateFieldFilter" id="isEarlyVotingDatepicker" onchange="changeEarlyVotingDate(this.value)" />
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-4 col-md-4 col-sm-4 hidden-xs" id="maxWait" style="display:block" >
+							<div class="row" style ="margin-top: 13px;">
+								<div class="col-lg-12 col-md-12 col-sm-12 hidden-xs" >
+									<input id="isMaxWait" onclick="unselectMaxWait()" name="isMaxWait" type="checkbox" value="isMaxWait">
+									<label for="isMaxWait" style="text-align: right">Max Wait Time:</label>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 hidden-xs" style="margin-left: 20px;" >
+									<input id="theMaxWait" class="minFee" onchange="changeMaxWait(this.value)" name="max_wait" type="number" value="60"> minutes
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-4 col-md-4 col-sm-4 hidden-xs" >
+							<div class="row" style ="margin-top: 13px;">
+								<div class="col-lg-12 col-md-12 col-sm-12 hidden-xs" >
+									<input id="isMaxDistance" onclick="unselectMaxDistance()"  name="isMaxDistance" type="checkbox" value="isMaxDistance">
+									<label for="isMaxDistance" style="text-align: right">Max Distance:</label>
+								</div>
+								<div class="col-lg-12 col-md-12 col-sm-12 hidden-xs" style="margin-left: 20px;" >
+									<input id="theMaxDistance" class="minFee" onchange="changeMaxDistance(this.value)" name="max_distance" type="number" value="3"> miles
+								</div>
+							</div>
+						</div>
+						<div>
+						</div>
+					</div>
+				</section>
+			</div>
+
+			<!--NON-HIDDEN STARTS HERE-->
+			<!--MAP AND INJECTED LIST DIV-->
+			<div class="container-fluid center-container ">
+				<div id="mapListContainer" class ="row" style = "margin-left: 0px; margin-right: 0px; ">
+					<div class="col-xs-12 tabs" id = "absenteeButtonMobile" style = "display:none" >
+						<div class='btn-group btn-group-justified ' role='group'>
+							<div class='btn-group tabLink mobileOptions activeSort' role='group'>
+								<div class ="col-xs-12 optionButtons">
+									<button type="button" class="hidden-lg hidden-md hidden-sm btn btn-lg btn-warning reportButton"  data-toggle="modal" data-target="#confirmModal" id="center-reportButton" onclick="checkReportLocation()">
+										<span class = "glyphicon glyphicon-time"></span> <span><em>How long is your line?</em></span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-lg-4 col-md-5 col-sm-6 col-xs-12" id = "listDiv" style = "height: 100%;">
+						<div id = "listGoesHere"></div>
+					</div>
+					<div class="col-lg-8 col-md-7 col-sm-6 col-xs-12" id = "mapGoesHere" style="padding-right: 0px; padding-left: 0px; height: 100%;">
+						<div id='map' class='center'></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- script files to use -->
+			<script src="placemgr_msgs.js" type="text/javascript"></script>
+			<script src="placemgr_filter.js" type="text/javascript"></script>
+			<script src="placemgr_info.js" type="text/javascript"></script>
+			<!-- main windows script file; keep this last in the list -->
+			<script src="placemgr_windows.js" type="text/javascript"></script>
+
+		</div>
+	</body>
+</html>
